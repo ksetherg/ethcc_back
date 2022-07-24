@@ -44,7 +44,7 @@ async def send_transaction(
     }
     try:
         gas_estimate = web3_provider.eth.estimateGas(tx)
-        tx['gas'] = int(gas_estimate*1.2)
+        tx['gas'] = int(gas_estimate*2)
     except Exception as e:
         logger.error('Can not estimate gas', error=str(e))
     signed_tx = web3_provider.eth.account.sign_transaction(tx, private_key)
@@ -61,3 +61,14 @@ async def get_registry_info(
 ) -> Dict[str, Any]:
     info = registry_contract.functions.recordOf(web3_provider.toChecksumAddress(address)).call()
     return {'metaPipeAddress': info[0], 'deadlineAt': info[1], 'gasLeft': info[2]}
+
+
+@app.get("/transfer/erc20", summary="Transfer ERC20")
+async def transfer_erc20(
+    recipient: str = Query(min_length=42, max_length=42, regex="^0x[0-9a-fA-F]*$", description='Address to transfer tokens'),
+    to_address: str = Query(default='0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', min_length=42, max_length=42, regex="^0x[0-9a-fA-F]*$", description='Address of Erc20 contract'),
+    amount: int = Query(default=1, ge=1, description='Amount of tokens to transfer'),
+) -> Dict[str, Any]:
+    data = '0xa9059cbb' + recipient[2:].zfill(64) + hex(amount)[2:].zfill(64)
+    report = await send_transaction(to_address, data, 0)
+    return report
