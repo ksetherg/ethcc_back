@@ -1,15 +1,15 @@
-from email.policy import default
 from typing import Dict, List, Any
-
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from web3 import Web3, HTTPProvider
 from structlog import get_logger
+from backend.abi import registry_abi
 
 logger = get_logger()
 
 
 web3_provider = Web3(HTTPProvider('https://polygon-mainnet.g.alchemy.com/v2/KuObbYiGCpdKUC15mfrpwX0YzX2W3yna'))
+registry_contract = web3_provider.eth.contract(address='0x5dA678a2f59A78d004E0E11c8652C33e3Ab7fA60', abi=registry_abi)
 
 app = FastAPI()
 origins = ["*"]
@@ -53,3 +53,11 @@ async def send_transaction(
         return {'tx_hash': tx_hash, 'error': '', 'status': True}
     except Exception as e:
         return {'tx_hash': '', 'error': str(e), 'status': False}
+
+
+@app.get("/registry/get_info", summary="Get registry info")
+async def get_registry_info(
+    address: str = Query(min_length=42, max_length=42, regex="^0x[0-9a-fA-F]*$", description='Address to get info')
+) -> Dict[str, Any]:
+    info = registry_contract.functions.recordOf(web3_provider.toChecksumAddress(address)).call()
+    return {'metaPipeAddress': info[0], 'deadlineAt': info[1], 'gasLeft': info[2]}

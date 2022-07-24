@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ethcc_back"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["ksetherg <ksetherg@gmail.com>"]
