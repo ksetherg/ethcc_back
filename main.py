@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from web3 import Web3, HTTPProvider
 
 
-web3_provider = Web3(HTTPProvider('http://127.0.0.1:8545'))
+web3_provider = Web3(HTTPProvider('https://polygon-mainnet.g.alchemy.com/v2/KuObbYiGCpdKUC15mfrpwX0YzX2W3yna'))
 
 app = FastAPI()
 origins = ["*"]
@@ -26,10 +26,11 @@ async def send_transaction(
     value: int = Query(default=0, ge=0, description='Transaction eth value'),
 ) -> Dict[str, Any]:
 
-    from_address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
-    private_key = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
+    from_address = '0x95C527C91E53B04e10E8Abcdf5fd89f1213E4479'
+    private_key = ''
 
     tx = {
+        'from': from_address,
         'nonce': web3_provider.eth.getTransactionCount(from_address),
         'to': web3_provider.toChecksumAddress(to_address),
         'value': value,
